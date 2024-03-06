@@ -248,7 +248,7 @@ namespace ThePornDB.Providers
             var images = new List<(ImageType Type, string Url)>
             {
                 (ImageType.Primary, (string)sceneData["background"]["full"]),
-                (ImageType.Primary, (string)sceneData["background"]["full"]),
+                (ImageType.Thumb, (string)sceneData["background"]["full"]),
                 (ImageType.Backdrop, (string)sceneData["background"]["full"]),
             };
 
