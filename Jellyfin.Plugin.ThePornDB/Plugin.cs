@@ -79,8 +79,6 @@ namespace ThePornDB
                     EmbeddedResourcePath = $"{this.GetType().Namespace}.Configuration.configPage.html",
                 },
             };
-#endif
-
-        
+#endif      
     }
 }
