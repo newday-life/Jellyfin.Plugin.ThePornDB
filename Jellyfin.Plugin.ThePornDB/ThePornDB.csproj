@@ -1,80 +1,85 @@
-<Project Sdk="Microsoft.NET.Sdk">
+using System;
+using System.Collections.Generic;
+using MediaBrowser.Common.Plugins;
+using ThePornDB.Configuration;
 
-  <PropertyGroup>
-    <TargetFramework Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='Release'">net6.0</TargetFramework>
-    <TargetFramework Condition="'$(Configuration)'=='Debug.Emby' or '$(Configuration)'=='Release.Emby'">netstandard2.1</TargetFramework>
-    <RootNamespace>ThePornDB</RootNamespace>
-    <AssemblyVersion>1.2.0.8</AssemblyVersion>
-    <FileVersion>1.2.0.8</FileVersion>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <Configurations>Debug;Release;Release.Emby;Debug.Emby</Configurations>
-  </PropertyGroup>
+#if __EMBY__
+using System.IO;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Logging;
+#else
+using System.Net.Http;
+using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Common.Configuration;
+#endif
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>DEBUG</DefineConstants>
-  </PropertyGroup>
+[assembly: CLSCompliant(false)]
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug.Emby'">
-    <DefineConstants>DEBUG;__EMBY__</DefineConstants>
-  </PropertyGroup>
+namespace ThePornDB
+{
+#if __EMBY__
+    public class Plugin : BasePluginSimpleUI<PluginConfiguration>, IHasThumbImage
+    {
+        public Plugin(IApplicationHost applicationHost, IHttpClient http, ILogManager logger)
+#else
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    {
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IHttpClientFactory http, ILogger<Plugin> logger)
+#endif
+#if __EMBY__
+            : base(applicationHost)
+#else
+            : base(applicationPaths, xmlSerializer)
+#endif
+        {
+            Instance = this;
+            Http = http;
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release.Emby'">
-    <DefineConstants>__EMBY__</DefineConstants>
-  </PropertyGroup>
+#if __EMBY__
+            if (logger != null)
+            {
+                Log = logger.GetLogger(this.Name);
+            }
+#else
+            Log = logger;
+#endif
+        }
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='Debug.Emby'">
-    <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+#if __EMBY__
+        public static IHttpClient Http { get; set; }
+#else
+        public static IHttpClientFactory Http { get; set; }
+#endif
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release' or '$(Configuration)'=='Release.Emby'">
-    <Optimize>true</Optimize>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors>NU1605</WarningsAsErrors>
-  </PropertyGroup>
+        public static ILogger Log { get; set; }
 
-  <ItemGroup>
-    <PackageReference Include="HttpClient.Caching" Version="1.3.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="RateLimiter" Version="2.2.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
-  </ItemGroup>
+        public static Plugin Instance { get; private set; }
 
-  <ItemGroup Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='Release'">
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.13" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-  </ItemGroup>
+        public override string Name => "ThePornDB";
 
-  <ItemGroup Condition="'$(Configuration)'=='Debug.Emby' or '$(Configuration)'=='Release.Emby'">
-    <PackageReference Include="MediaBrowser.Server.Core" Version="4.8.0.80" />
-  </ItemGroup>
+        public override Guid Id => Guid.Parse("fb7580cf-576d-4991-8e56-0b4520c111d3");
 
-  <ItemGroup Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='Debug.Emby'">
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+#if __EMBY__
+        public PluginConfiguration Configuration => GetOptions();
 
-  <ItemGroup Condition="'$(Configuration)'=='Release' or '$(Configuration)'=='Release.Emby'">
-    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.26">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+        public Stream GetThumbImage() => this.GetType().Assembly.GetManifestResourceStream($"{this.GetType().Namespace}.Resources.logo.png");
 
-  <ItemGroup Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='Release'">
-      <None Remove="Configuration\configPage.html"/>
-      <EmbeddedResource Include="Configuration\configPage.html"/>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug.Emby' or '$(Configuration)'=='Release.Emby'">
-      <None Remove="Resources\logo.png"/>
-      <EmbeddedResource Include="Resources\logo.png"/>
-  </ItemGroup>
-
-</Project>
+        public ImageFormat ThumbImageFormat => ImageFormat.Png;
+#else
+        public IEnumerable<PluginPageInfo> GetPages()
+            => new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = this.Name,
+                    EmbeddedResourcePath = $"{this.GetType().Namespace}.Configuration.configPage.html",
+                },
+            };
+#endif
+    }
+}
