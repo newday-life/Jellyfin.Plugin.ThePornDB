@@ -52,7 +52,6 @@ namespace ThePornDB.Configuration
     public class PluginConfiguration : EditableOptionsBase
     {
         public override string EditorTitle => Plugin.Instance.Name;
-
     #else
     public class PluginConfiguration : BasePluginConfiguration
     {
