@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
 using ThePornDB.Configuration;
 
 #if __EMBY__
 using System.IO;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 #else
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Plugins;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 #endif
@@ -21,15 +23,19 @@ using Microsoft.Extensions.Logging;
 namespace ThePornDB
 {
 #if __EMBY__
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasThumbImage
     {
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IHttpClient http, ILogManager logger)
+        public Plugin(IApplicationPaths applicationPaths, IHttpClient http, ILogManager logger)
 #else
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IHttpClientFactory http, ILogger<Plugin> logger)
 #endif
+#if __EMBY__
+            : base(applicationHost)
+#else
             : base(applicationPaths, xmlSerializer)
+#endif
         {
             Instance = this;
             Http = http;
@@ -62,9 +68,8 @@ namespace ThePornDB
         public ImageFormat ThumbImageFormat => ImageFormat.Png;
 
         public Stream GetThumbImage() => this.GetType().Assembly.GetManifestResourceStream($"{this.GetType().Namespace}.Resources.logo.png");
+        public PluginConfiguration Configuration => GetOptions();
 #else
-#endif
-
         public IEnumerable<PluginPageInfo> GetPages()
             => new[]
             {
@@ -74,5 +79,8 @@ namespace ThePornDB
                     EmbeddedResourcePath = $"{this.GetType().Namespace}.Configuration.configPage.html",
                 },
             };
+#endif
+
+        
     }
 }
