@@ -2,14 +2,14 @@ name: Build
 on:
   push:
     branches:
-      - main
+      - emby48
     tags: ["v*"]
     paths:
       - Jellyfin.Plugin.ThePornDB/**
       - .github/**
   pull_request:
     branches: 
-      -main
+      -emby48
 
 jobs:
   debug-jellyfin:
