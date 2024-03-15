@@ -11,11 +11,11 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 #else
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Plugins;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Common.Configuration;
 #endif
 
 [assembly: CLSCompliant(false)]
@@ -23,9 +23,9 @@ using Microsoft.Extensions.Logging;
 namespace ThePornDB
 {
 #if __EMBY__
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasThumbImage
+    public class Plugin : BasePluginSimpleUI<PluginConfiguration>, IHasThumbImage
     {
-        public Plugin(IApplicationPaths applicationPaths, IHttpClient http, ILogManager logger)
+        public Plugin(IApplicationHost applicationHost, IHttpClient http, ILogManager logger)
 #else
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
@@ -65,10 +65,11 @@ namespace ThePornDB
         public override Guid Id => Guid.Parse("fb7580cf-576d-4991-8e56-0b4520c111d3");
 
 #if __EMBY__
-        public ImageFormat ThumbImageFormat => ImageFormat.Png;
+        public PluginConfiguration Configuration => GetOptions();
 
         public Stream GetThumbImage() => this.GetType().Assembly.GetManifestResourceStream($"{this.GetType().Namespace}.Resources.logo.png");
-        public PluginConfiguration Configuration => GetOptions();
+
+        public ImageFormat ThumbImageFormat => ImageFormat.Png;
 #else
         public IEnumerable<PluginPageInfo> GetPages()
             => new[]
@@ -79,6 +80,6 @@ namespace ThePornDB
                     EmbeddedResourcePath = $"{this.GetType().Namespace}.Configuration.configPage.html",
                 },
             };
-#endif      
+#endif
     }
 }
