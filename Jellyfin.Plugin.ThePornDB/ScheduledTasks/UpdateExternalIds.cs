@@ -43,10 +43,10 @@ namespace ThePornDB.ScheduledTasks
             foreach (var scene in scenes)
             {
                 scene.ProviderIds.TryGetValue(Plugin.Instance.Name, out var curID);
-                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("scenes/", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("scenes%2F", StringComparison.OrdinalIgnoreCase))
                 {
                     var newScene = scene;
-                    newScene.ProviderIds[Plugin.Instance.Name] = $"scenes/{curID}";
+                    newScene.ProviderIds[Plugin.Instance.Name] = $"scenes%2F{curID}";
 
 #if __EMBY__
                     this.libraryManager.UpdateItem(scene, newScene, ItemUpdateType.MetadataEdit);
@@ -62,10 +62,10 @@ namespace ThePornDB.ScheduledTasks
             foreach (var movie in movies)
             {
                 movie.ProviderIds.TryGetValue(Plugin.Instance.Name + "Movie", out var curID);
-                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("movies/", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("movies%2F", StringComparison.OrdinalIgnoreCase))
                 {
                     var newMovie = movie;
-                    newMovie.ProviderIds[Plugin.Instance.Name] = $"movies/{curID}";
+                    newMovie.ProviderIds[Plugin.Instance.Name] = $"movies%2F{curID}";
 
 #if __EMBY__
                     this.libraryManager.UpdateItem(movie, newMovie, ItemUpdateType.MetadataEdit);
@@ -81,10 +81,10 @@ namespace ThePornDB.ScheduledTasks
             foreach (var jav in javs)
             {
                 jav.ProviderIds.TryGetValue(Plugin.Instance.Name + "JAV", out var curID);
-                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("jav/", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(curID) && !curID.StartsWith("jav%2F", StringComparison.OrdinalIgnoreCase))
                 {
                     var newJav = jav;
-                    newJav.ProviderIds[Plugin.Instance.Name] = $"jav/{curID}";
+                    newJav.ProviderIds[Plugin.Instance.Name] = $"jav%2F{curID}";
 
 #if __EMBY__
                     this.libraryManager.UpdateItem(jav, newJav, ItemUpdateType.MetadataEdit);
